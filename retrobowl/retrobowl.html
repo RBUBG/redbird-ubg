@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://cdn.jsdelivr.net/gh/selenite-cc/selenite-old@9c743188888af0986c8c7b293dbac8f9e421a4ee/retrobowl/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Retro Bowl</title>
+  <style>
+    body {
+      margin: 0; padding: 0; background: #000; color: #ccc;
+    }
+    canvas {
+      display: block;
+      image-rendering: optimizeSpeed;
+      -webkit-interpolation-mode: nearest-neighbor;
+      margin: 0; padding: 0; border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="gm4html5_div_id">
+    <img src="html5game/splash.png" id="GM4HTML5_loadingscreen" alt="Loading" style="display:none" />
+    <canvas id="canvas" width="960" height="540">
+      <p>Your browser doesn't support HTML5 canvas.</p>
+    </canvas>
+  </div>
+
+  <script src="js/all.js"></script>
+  <script src="html5game/RetroBowl.js?WAEAC=1633155445"></script>
+  <script src="html/settings/js/index.js"></script>
+  <script>
+    window.onload = GameMaker_Init;
+  </script>
+</body>
+</html>
