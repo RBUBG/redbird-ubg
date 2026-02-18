@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Most Active Players</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Most Active Players This Week</h2>
+
+  <div id="nicknameDiv">
+    <input type="text" id="nickname" placeholder="Enter your nickname" maxlength="12">
+    <button id="startButton" onclick="setNickname()">Start</button>
+  </div>
+
+  <ul id="mostActive"></ul>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdPwFPGD-H1nDMDcJC4KzusnxzTrdPciY",
+      authDomain: "project-9eb95.firebaseapp.com",
+      projectId: "project-9eb95",
+      storageBucket: "project-9eb95.firebasestorage.app",
+      messagingSenderId: "262782509110",
+      appId: "1:262782509110:web:11d6010abf72be5ce03897"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function setNickname() {
+      const nickname = document.getElementById("nickname").value.trim();
+      if (!nickname) return alert("Please enter a nickname");
+      localStorage.setItem("nickname", nickname);
+      document.getElementById("nicknameDiv").style.display = "none";
+      alert("Welcome, " + nickname);
+    }
+
+    function currentWeek() {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      return Math.ceil((((now - start) / 86400000) + start.getDay() + 1) / 7);
+    }
+
+    // Record a game click
+    window.recordGameClick = async function(gameId) {
+      const username = localStorage.getItem("nickname");
+      if (!username) return alert("Enter your nickname first!");
+
+      const docRef = doc(db, "weekly_activity", username);
+      const docSnap = await getDoc(docRef);
+
+      let data = { totalClicks: 1, lastWeek: currentWeek() };
+
+      if (docSnap.exists()) {
+        data = docSnap.data();
+        if (data.lastWeek !== currentWeek()) {
+          data.totalClicks = 0;
+          data.lastWeek = currentWeek();
+        }
+        data.totalClicks += 1;
+      }
+
+      await setDoc(docRef, data);
+      loadLeaderboard();
+    }
+
+    // Load the Most Active leaderboard
+    async function loadLeaderboard() {
+      const mostActive = document.getElementById("mostActive");
+      mostActive.innerHTML = "";
+
+      const q = query(collection(db, "weekly_activity"), orderBy("totalClicks", "desc"), limit(10));
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach((docSnap, i) => {
+        const data = docSnap.data();
+        const li = document.createElement("li");
+        li.textContent = `${i+1}. ${data.username} - ${data.totalClicks}`;
+        mostActive.appendChild(li);
+      });
+    }
+
+    loadLeaderboard();
+  </script>
+
+</body>
+</html>
