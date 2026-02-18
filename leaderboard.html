@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Game Leaderboard</h2>
+
+  <input type="text" id="username" placeholder="Username" maxlength="12">
+  <input type="number" id="score" placeholder="Score">
+  <button onclick="submitScore()">Submit Score</button>
+
+  <h3>Top 10 Players</h3>
+  <ul id="leaderboard"></ul>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      query, 
+      orderBy, 
+      limit, 
+      getDocs 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDdPwFPGD-H1nDMDcJC4KzusnxzTrdPciY",
+      authDomain: "project-9eb95.firebaseapp.com",
+      projectId: "project-9eb95",
+      storageBucket: "project-9eb95.firebasestorage.app",
+      messagingSenderId: "262782509110",
+      appId: "1:262782509110:web:11d6010abf72be5ce03897"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.submitScore = async function () {
+      const username = document.getElementById("username").value.trim();
+      const score = parseInt(document.getElementById("score").value);
+
+      if (!username || isNaN(score)) {
+        alert("Enter valid username and score");
+        return;
+      }
+
+      await addDoc(collection(db, "leaderboard"), {
+        username: username,
+        score: score,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("username").value = "";
+      document.getElementById("score").value = "";
+
+      loadLeaderboard();
+    };
+
+    async function loadLeaderboard() {
+      const leaderboard = document.getElementById("leaderboard");
+      leaderboard.innerHTML = "";
+
+      const q = query(
+        collection(db, "leaderboard"),
+        orderBy("score", "desc"),
+        limit(10)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc, index) => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${data.username} - ${data.score}`;
+        leaderboard.appendChild(li);
+      });
+    }
+
+    loadLeaderboard();
+  </script>
+
+</body>
+</html>
